@@ -59,7 +59,81 @@ CalcWindow::~CalcWindow() {
 }
 
 void CalcWindow::OnButtonClick(wxCommandEvent& evt) {
-	
+    if (mFirstClick == true) {
+        mFirstClick = false;
+    }
+    wxString txt = mNumDisplay->GetLabelText();
+    if (txt == "0" && (evt.GetId() - 10000) < 16) {
+        mNumDisplay->SetLabelText("");
+    }
+    switch (btnID(evt.GetId() - 10000))
+    {
+    case binary:
+        break;
+    case seven:
+        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "7");
+        break;
+    case four:
+        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "4");
+        break;
+    case one:
+        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "1");
+        break;
+    case mod:
+        break;
+    case hex:
+        break;
+    case eight:
+        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "8");
+        break;
+    case five:
+        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "5");
+        break;
+    case two:
+        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "2");
+        break;
+    case zero:
+        if (mNumDisplay->GetLabelText() != "0") {
+            CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "0");
+        }
+        break;
+    case decimal:
+        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + ".");
+        break;
+    case nine:
+        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "9");
+        break;
+    case six:
+        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "6");
+        break;
+    case three:
+        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "3");
+        break;
+    case equals:
+        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "=");
+        break;
+    case negative:
+        break;
+    case divide:
+        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "/");
+        break;
+    case multiply:
+        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "*");
+        break;
+    case subtract:
+        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "-");
+        break;
+    case add:
+        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "+");
+        break;
+    case clear:
+        CalcWindow::SetTextBoxText("0");
+        mPrevCalcDisplay->SetLabelText("");
+        break;
+    default:
+        break;
+    }
+    evt.Skip();
 }
 
 
