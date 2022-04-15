@@ -1,41 +1,46 @@
 #pragma once
-#include "wx/wx.h"
+#include "ButtonFactory.h"
 #include <string>
 
 class CalcWindow : public wxFrame
 {
 public:
-	int mFieldWidth =4;
-	int mFieldHeight = 5;
-
 	float mNumberOne = 0;
 	float mNumberTwo = 0;
 
 	int xOffset = 7;
 	int yOffset = 110;
 
-	wxButton** btn;
+	//button
+	wxButton** btnNumbers;
 	wxButton* btnClear;
-	int* mField = nullptr;
-	bool mFirstClick = true;
+	wxButton* btnAdd;
+	wxButton* btnMinus;
+	wxButton* btnMultiply;
+	wxButton* btnDivide;
+	wxButton* btnMod;
+	wxButton* btnHex;
+	wxButton* btnDecimal;
+	wxButton* btnBinary;
+	wxButton* btnNegate;
+	wxButton* btnEquals;
 
-	wxString temp;
 	wxString fin1;
 	wxString fin2;
 
-	wxTextCtrl *mNumDisplay;
-	wxTextCtrl *mPrevCalcDisplay;
+	wxTextCtrl* mNumDisplay;
+	wxTextCtrl* mPrevCalcDisplay;
 
-	std::string btnNums =  "B741%H8520D963=~/*-+";
+	ButtonFactory mBtnFactory;
+
+	std::string btnNums = "B741%H8520D963=~/*-+";
 public:
 	CalcWindow();
 	~CalcWindow();
 	void OnButtonClick(wxCommandEvent& evt);
-	//void OnEnterKeyPress(wxKeyEvent& evt);
 
-	//void FindNumsToCalculate(std::string _operand);
-	//std::string Calculate(wxString _txt);
-	bool CheckIfContainsOperand(wxString _txt);
+	void FindNumsToCalculate(std::string _operand);
+	wxString Calculate(wxString _txt);
 
 	void SetTextBoxText(wxString _text);
 
