@@ -42,7 +42,7 @@ wxButton* ButtonFactory::CreateHexButton(wxWindow* parent, wxWindowID id, const 
 
 wxButton* ButtonFactory::CreateDecimalButton(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size)
 {
-	return CreateButton(parent, id, "D", pos, size);
+	return CreateButton(parent, id, ".", pos, size);
 }
 
 wxButton* ButtonFactory::CreateBinaryButton(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size)

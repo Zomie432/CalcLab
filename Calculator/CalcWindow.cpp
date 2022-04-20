@@ -1,4 +1,5 @@
 #include "CalcWindow.h"
+#include <bitset>
 
 wxBEGIN_EVENT_TABLE(CalcWindow, wxFrame)
 wxEND_EVENT_TABLE()
@@ -99,13 +100,29 @@ CalcWindow::~CalcWindow() {
 
 void CalcWindow::OnButtonClick(wxCommandEvent& evt) {
     wxString txt = mNumDisplay->GetLabelText();
+    int txtInt = wxAtoi(mNumDisplay->GetLabelText());
     if ((txt == "0" && (evt.GetId() - 10000) < 10) || txt == "ERROR") {
         mNumDisplay->SetLabelText("");
+    }
+    if (bIsBorH == true) {
+        CalcWindow::SetTextBoxText(mStoredNum);
+        bIsBorH = false;
     }
     switch (btnID(evt.GetId() - 10000))
     {
     case binary:
+        mNumDisplay->SetLabelText(CalcWindow::Calculate(txt));
+        mStoredNum = mNumDisplay->GetLabelText();
+        CalcWindow::SetTextBoxText(std::bitset<8>(txtInt).to_string());
+        bIsBorH = true;
         break;
+    case hex:
+        /*mNumDisplay->SetLabelText(CalcWindow::Calculate(txt));
+        mStoredNum = mNumDisplay->GetLabelText();
+        hexStream << std::hex << txtInt;
+        hexRes = hexStream.str();
+        CalcWindow::SetTextBoxText(hexRes);
+        bIsBorH = true;*/
     case seven:
         CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "7");
         break;
@@ -114,12 +131,6 @@ void CalcWindow::OnButtonClick(wxCommandEvent& evt) {
         break;
     case one:
         CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "1");
-        break;
-    case mod:
-        CalcWindow::SetTextBoxText(CalcWindow::Calculate(txt));
-        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "%");
-        break;
-    case hex:
         break;
     case eight:
         CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "8");
@@ -147,26 +158,36 @@ void CalcWindow::OnButtonClick(wxCommandEvent& evt) {
     case three:
         CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "3");
         break;
-    case equals:
-        mNumDisplay->SetLabelText(CalcWindow::Calculate(txt));
-        break;
     case negative:
+        CalcWindow::SetTextBoxText("-" + mNumDisplay->GetLabelText());
         break;
     case divide:
+        CalcWindow::FindNumsToCalculate("+");
         CalcWindow::SetTextBoxText(CalcWindow::Calculate(txt));
         CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "/");
         break;
     case multiply:
+        CalcWindow::FindNumsToCalculate("+");
         CalcWindow::SetTextBoxText(CalcWindow::Calculate(txt));
         CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "*");
         break;
     case subtract:
+        CalcWindow::FindNumsToCalculate("+");
         CalcWindow::SetTextBoxText(CalcWindow::Calculate(txt));
         CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "-");
         break;
     case add:
+        CalcWindow::FindNumsToCalculate("+");
         CalcWindow::SetTextBoxText(CalcWindow::Calculate(txt));
         CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "+");
+        break;
+    case mod:
+        CalcWindow::FindNumsToCalculate("%");
+        CalcWindow::SetTextBoxText(CalcWindow::Calculate(txt));
+        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "%");
+        break;
+    case equals:
+        mNumDisplay->SetLabelText(CalcWindow::Calculate(txt));
         break;
     case clear:
         CalcWindow::SetTextBoxText("0");
@@ -189,54 +210,46 @@ void CalcWindow::FindNumsToCalculate(std::string _operand) {
 }
 
 wxString CalcWindow::Calculate(wxString _txt) {
+    float t = 0;
+    bool bTemp = false;
     if (_txt.Contains("+")) {
+        bTemp = true;
         CalcWindow::FindNumsToCalculate("+");
-        float temp = mNumberOne + mNumberTwo;
-        mPrevCalcDisplay->SetLabelText(_txt + "=");
-        if (temp == (int)temp) {
-            return std::to_string((int)temp);
-        }
-        else return std::to_string(temp);
+        t = mProcessor->ProcessAdd(mNumberOne, mNumberTwo);
     }
-    else if (_txt.Contains("-")) {
+    else if (_txt.Contains("-") && _txt.Find("-") != 0) {
+        bTemp = true;
         CalcWindow::FindNumsToCalculate("-");
-        float temp = mNumberOne - mNumberTwo;
-        mPrevCalcDisplay->SetLabelText(_txt + "=");
-        if (temp == (int)temp) {
-            return std::to_string((int)temp);
-        }
-        else return std::to_string(temp);
+        t = mProcessor->ProcessMinus(mNumberOne, mNumberTwo);
     }
     else if (_txt.Contains("/")) {
+        bTemp = true;
         CalcWindow::FindNumsToCalculate("/");
         if (mNumberTwo == 0 || mNumberOne == 0) {
             return "ERROR";
         }
         else {
-            float temp = mNumberOne / mNumberTwo;
-            mPrevCalcDisplay->SetLabelText(_txt + "=");
-            if (temp == (int)temp) {
-                return std::to_string((int)temp);
-            }
-            else return std::to_string(temp);
+            t = mProcessor->ProcessDivide(mNumberOne, mNumberTwo);
         }
     }
     else if (_txt.Contains("*")) {
+        bTemp = true;
         CalcWindow::FindNumsToCalculate("*");
-        float temp = mNumberOne * mNumberTwo;
-        mPrevCalcDisplay->SetLabelText(_txt + "=");
-        if (temp == (int)temp) {
-            return std::to_string((int)temp);
-        }
-        else return std::to_string(temp);
+        t = mProcessor->ProcessMultiply(mNumberOne, mNumberTwo);
     }
     else if (_txt.Contains("%")) {
+        bTemp = true;
         CalcWindow::FindNumsToCalculate("%");
-        int temp = (int)mNumberOne % (int)mNumberTwo;
-        mPrevCalcDisplay->SetLabelText(_txt + "=");
-        return std::to_string(temp);
+        t = mProcessor->ProcessMod(mNumberOne, mNumberTwo);
     }
-    else return _txt;
+    mPrevCalcDisplay->SetLabelText(_txt + "=");
+    if (bTemp == true) {
+        if (t == (int)t) {
+            return std::to_string((int)t);
+        }
+        else return std::to_string(t);
+    }
+    return _txt;
 }
 
 void CalcWindow::SetTextBoxText(wxString _text) {

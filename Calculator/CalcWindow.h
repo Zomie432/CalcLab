@@ -1,15 +1,27 @@
 #pragma once
 #include "ButtonFactory.h"
+#include "CalcProcessor.h"
 #include <string>
+#include <sstream>
 
 class CalcWindow : public wxFrame
 {
+private:
+	CalcProcessor* mProcessor = &CalcProcessor::getInstance();
+
 public:
 	float mNumberOne = 0;
 	float mNumberTwo = 0;
 
 	int xOffset = 7;
 	int yOffset = 110;
+
+	wxString mStoredNum;
+
+	std::ostringstream hexStream;
+	std::string hexRes;
+
+	bool bIsBorH = false;
 
 	//button
 	wxButton** btnNumbers;
@@ -32,8 +44,6 @@ public:
 	wxTextCtrl* mPrevCalcDisplay;
 
 	ButtonFactory mBtnFactory;
-
-	std::string btnNums = "B741%H8520D963=~/*-+";
 public:
 	CalcWindow();
 	~CalcWindow();
