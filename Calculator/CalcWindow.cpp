@@ -6,9 +6,9 @@ wxEND_EVENT_TABLE()
 
 enum btnID {
     zero, one, two, three, four, five,
-    six, seven, eight, nine, equals,
-    negative, add, subtract, multiply, divide,
-    mod, hex, decimal, binary, clear
+    six, seven, eight, nine, equals, negative,
+    add, subtract, multiply, divide, mod,
+    hex, decimal, binary, clear
 };
 
 CalcWindow::CalcWindow() : wxFrame(nullptr, wxID_ANY, "Calculator", wxPoint(400, 200), wxSize(350, 510))
@@ -100,7 +100,7 @@ CalcWindow::~CalcWindow() {
 
 void CalcWindow::OnButtonClick(wxCommandEvent& evt) {
     wxString txt = mNumDisplay->GetLabelText();
-    int txtInt = wxAtoi(mNumDisplay->GetLabelText());
+
     if ((txt == "0" && (evt.GetId() - 10000) < 10) || txt == "ERROR") {
         mNumDisplay->SetLabelText("");
     }
@@ -108,148 +108,95 @@ void CalcWindow::OnButtonClick(wxCommandEvent& evt) {
         CalcWindow::SetTextBoxText(mStoredNum);
         bIsBorH = false;
     }
-    switch (btnID(evt.GetId() - 10000))
-    {
-    case binary:
-        mNumDisplay->SetLabelText(CalcWindow::Calculate(txt));
-        mStoredNum = mNumDisplay->GetLabelText();
-        CalcWindow::SetTextBoxText(std::bitset<8>(txtInt).to_string());
-        bIsBorH = true;
-        break;
-    case hex:
-        /*mNumDisplay->SetLabelText(CalcWindow::Calculate(txt));
-        mStoredNum = mNumDisplay->GetLabelText();
-        hexStream << std::hex << txtInt;
-        hexRes = hexStream.str();
-        CalcWindow::SetTextBoxText(hexRes);
-        bIsBorH = true;*/
-    case seven:
-        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "7");
-        break;
-    case four:
-        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "4");
-        break;
-    case one:
-        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "1");
-        break;
-    case eight:
-        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "8");
-        break;
-    case five:
-        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "5");
-        break;
-    case two:
-        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "2");
-        break;
-    case zero:
+
+    if (evt.GetId() - 10000 >= btnID::hex) {
+        if (evt.GetId() - 10000 == btnID::binary) {
+            int txtInt = wxAtoi(mNumDisplay->GetLabelText());
+            //mNumDisplay->SetLabelText(CalcWindow::Calculate(txt));
+            mStoredNum = mNumDisplay->GetLabelText();
+            CalcWindow::SetTextBoxText(std::bitset<8>(txtInt).to_string());
+            bIsBorH = true;
+        }
+        if (evt.GetId() - 10000 == btnID::hex) {
+
+        }
+
+        if (evt.GetId() - 10000 == btnID::decimal) {
+            CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + ".");
+        }
+
+        if (evt.GetId() - 10000 == btnID::clear) {
+            CalcWindow::SetTextBoxText("0");
+            mPrevCalcDisplay->Clear();
+            mNumStr.Clear();
+        }
+    }
+
+    //negative
+    if (evt.GetId() - 10000 == btnID::negative) {
+        CalcWindow::SetTextBoxText("-" + mNumDisplay->GetLabelText());
+    }
+
+    //0
+    if (evt.GetId() - 10000 == btnID::zero) {
         if (mNumDisplay->GetLabelText() != "0") {
             CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "0");
+            mNumStr.append("0");
         }
-        break;
-    case decimal:
-        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + ".");
-        break;
-    case nine:
-        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "9");
-        break;
-    case six:
-        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "6");
-        break;
-    case three:
-        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "3");
-        break;
-    case negative:
-        CalcWindow::SetTextBoxText("-" + mNumDisplay->GetLabelText());
-        break;
-    case divide:
-        CalcWindow::FindNumsToCalculate("+");
-        CalcWindow::SetTextBoxText(CalcWindow::Calculate(txt));
-        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "/");
-        break;
-    case multiply:
-        CalcWindow::FindNumsToCalculate("+");
-        CalcWindow::SetTextBoxText(CalcWindow::Calculate(txt));
-        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "*");
-        break;
-    case subtract:
-        CalcWindow::FindNumsToCalculate("+");
-        CalcWindow::SetTextBoxText(CalcWindow::Calculate(txt));
-        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "-");
-        break;
-    case add:
-        CalcWindow::FindNumsToCalculate("+");
-        CalcWindow::SetTextBoxText(CalcWindow::Calculate(txt));
+    }
+    //num other then 0
+    else if (evt.GetId() - 10000 <= btnID::nine) {
+        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + std::to_string(btnID(evt.GetId() - 10000)));
+        mNumStr.append(std::to_string(btnID(evt.GetId() - 10000)));
+    }
+
+    //operands
+    if (evt.GetId() - 10000 == btnID::add) {
+        AddCommand* command = new AddCommand();
+        command->mPrevNum = wxAtof(mNumStr);
+        mNumStr.Clear();
+        mProcessor->AddCommand(command, command->mPrevNum);
         CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "+");
-        break;
-    case mod:
-        CalcWindow::FindNumsToCalculate("%");
-        CalcWindow::SetTextBoxText(CalcWindow::Calculate(txt));
+    }
+    else if (evt.GetId() - 10000 == btnID::subtract) {
+        SubtractCommand* command = new SubtractCommand();
+        command->mPrevNum = wxAtof(mNumStr);
+        mNumStr.Clear();
+        mProcessor->AddCommand(command, command->mPrevNum);
+        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "-");
+    }
+    else if (evt.GetId() - 10000 == btnID::multiply) {
+        MultiplyCommand* command = new MultiplyCommand();
+        command->mPrevNum = wxAtof(mNumStr);
+        mNumStr.Clear();
+        mProcessor->AddCommand(command, command->mPrevNum);
+        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "*");
+    }
+    else if (evt.GetId() - 10000 == btnID::divide) {
+        DivideCommand* command = new DivideCommand();
+        command->mPrevNum = wxAtof(mNumStr);
+        mNumStr.Clear();
+        mProcessor->AddCommand(command, command->mPrevNum);
+        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "/");
+    }
+    else if (evt.GetId() - 10000 == btnID::mod) {
+        ModCommand* command = new ModCommand();
+        command->mPrevNum = wxAtof(mNumStr);
+        mNumStr.Clear();
+        mProcessor->AddCommand(command, command->mPrevNum);
         CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "%");
-        break;
-    case equals:
-        mNumDisplay->SetLabelText(CalcWindow::Calculate(txt));
-        break;
-    case clear:
-        CalcWindow::SetTextBoxText("0");
-        mPrevCalcDisplay->SetLabelText("");
-        break;
-    default:
-        break;
+    }
+    else if (evt.GetId() - 10000 == btnID::equals)
+    {
+        mProcessor->AddCommand(new EqualsCommand(), wxAtof(mNumStr));
+        mNumStr.Clear();
+        CalcWindow::SetTextBoxText(std::to_string(mProcessor->ExecuteCommands()));
+        if (wxAtoi(mNumDisplay->GetLabelText()) == wxAtof(mNumDisplay->GetLabelText())) {
+            int tempSum = wxAtoi(mNumDisplay->GetLabelText());
+            mNumDisplay->SetLabelText(std::to_string(tempSum));
+        }
     }
     evt.Skip();
-}
-
-void CalcWindow::FindNumsToCalculate(std::string _operand) {
-    int i;
-    wxString temp = mNumDisplay->GetLabelText();
-    i = temp.Find(_operand);
-    fin1 = temp.SubString(0, i - 1);
-    mNumberOne = wxAtof(fin1);
-    fin2 = temp.SubString(i + 1, temp.length());
-    mNumberTwo = wxAtof(fin2);
-}
-
-wxString CalcWindow::Calculate(wxString _txt) {
-    float t = 0;
-    bool bTemp = false;
-    if (_txt.Contains("+")) {
-        bTemp = true;
-        CalcWindow::FindNumsToCalculate("+");
-        t = mProcessor->ProcessAdd(mNumberOne, mNumberTwo);
-    }
-    else if (_txt.Contains("-") && _txt.Find("-") != 0) {
-        bTemp = true;
-        CalcWindow::FindNumsToCalculate("-");
-        t = mProcessor->ProcessMinus(mNumberOne, mNumberTwo);
-    }
-    else if (_txt.Contains("/")) {
-        bTemp = true;
-        CalcWindow::FindNumsToCalculate("/");
-        if (mNumberTwo == 0 || mNumberOne == 0) {
-            return "ERROR";
-        }
-        else {
-            t = mProcessor->ProcessDivide(mNumberOne, mNumberTwo);
-        }
-    }
-    else if (_txt.Contains("*")) {
-        bTemp = true;
-        CalcWindow::FindNumsToCalculate("*");
-        t = mProcessor->ProcessMultiply(mNumberOne, mNumberTwo);
-    }
-    else if (_txt.Contains("%")) {
-        bTemp = true;
-        CalcWindow::FindNumsToCalculate("%");
-        t = mProcessor->ProcessMod(mNumberOne, mNumberTwo);
-    }
-    mPrevCalcDisplay->SetLabelText(_txt + "=");
-    if (bTemp == true) {
-        if (t == (int)t) {
-            return std::to_string((int)t);
-        }
-        else return std::to_string(t);
-    }
-    return _txt;
 }
 
 void CalcWindow::SetTextBoxText(wxString _text) {

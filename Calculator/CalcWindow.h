@@ -18,10 +18,12 @@ public:
 
 	wxString mStoredNum;
 
-	std::ostringstream hexStream;
 	std::string hexRes;
 
 	bool bIsBorH = false;
+
+	const char* mBtnCodes = "0123456789";
+	wxString mNumStr = "";
 
 	//button
 	wxButton** btnNumbers;
@@ -37,9 +39,6 @@ public:
 	wxButton* btnNegate;
 	wxButton* btnEquals;
 
-	wxString fin1;
-	wxString fin2;
-
 	wxTextCtrl* mNumDisplay;
 	wxTextCtrl* mPrevCalcDisplay;
 
@@ -48,9 +47,6 @@ public:
 	CalcWindow();
 	~CalcWindow();
 	void OnButtonClick(wxCommandEvent& evt);
-
-	void FindNumsToCalculate(std::string _operand);
-	wxString Calculate(wxString _txt);
 
 	void SetTextBoxText(wxString _text);
 

@@ -145,6 +145,7 @@
     <ClInclude Include="CalcApp.h" />
     <ClInclude Include="CalcProcessor.h" />
     <ClInclude Include="CalcWindow.h" />
+    <ClInclude Include="IBaseCommand.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ButtonFactory.cpp" />

@@ -1,12 +1,20 @@
 #pragma once
+#include <list>
+#include "IBaseCommand.h"
 
 class CalcProcessor
 {
 private:
+	std::list<IBaseCommand*> mCommands;
+
+	IBaseCommand* mLastCommand = nullptr;
+
 	CalcProcessor() {}
-	~CalcProcessor() {}
 
 public:
+	void AddCommand(IBaseCommand* _command, float _num);
+	float ExecuteCommands();
+
 	static CalcProcessor& getInstance() {
 		static CalcProcessor calcProcessor;
 		return calcProcessor;
