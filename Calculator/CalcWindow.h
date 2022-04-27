@@ -18,11 +18,11 @@ public:
 
 	wxString mStoredNum;
 
-	std::string hexRes;
-
-	bool bIsBorH = false;
+	bool bIsBinary = false;
+	bool bIsHex = false;
 
 	const char* mBtnCodes = "0123456789";
+
 	wxString mNumStr = "";
 
 	//button

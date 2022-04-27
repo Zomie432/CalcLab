@@ -55,3 +55,32 @@ float CalcProcessor::ProcessMod(float num1, float num2)
 {
 	return (int)num1 % (int)num2;
 }
+
+std::string CalcProcessor::ProcessBinary(long long num)
+{
+	std::string text = "";
+	for (int i = 0; i < 12; i++)
+	{
+		if (num % 2 == 0) {
+			text = "0" + text;
+		}
+		else {
+			text = "1" + text;
+		}
+		num /= 2;
+	}
+	return text;
+}
+
+std::string CalcProcessor::ProcessHex(int num)
+{
+	std::stringstream text;
+	if (num < 0) {
+		text << "-";
+		num *= -1;
+	}
+	text << "0x" << std::hex << num;
+	std::string result = text.str();
+	return result;
+	
+}

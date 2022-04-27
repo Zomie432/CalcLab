@@ -1,6 +1,8 @@
 #pragma once
 #include <list>
 #include "IBaseCommand.h"
+#include <string>
+#include <sstream>
 
 class CalcProcessor
 {
@@ -26,5 +28,7 @@ public:
 	float ProcessMultiply(float num1, float num2);
 	float ProcessDivide(float num1, float num2);
 	float ProcessMod(float num1, float num2);
+	std::string ProcessBinary(long long num);
+	std::string ProcessHex(int num1);
 };
 

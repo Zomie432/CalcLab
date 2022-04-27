@@ -1,5 +1,4 @@
 #include "CalcWindow.h"
-#include <bitset>
 
 wxBEGIN_EVENT_TABLE(CalcWindow, wxFrame)
 wxEND_EVENT_TABLE()
@@ -100,32 +99,36 @@ CalcWindow::~CalcWindow() {
 
 void CalcWindow::OnButtonClick(wxCommandEvent& evt) {
     wxString txt = mNumDisplay->GetLabelText();
-
-    if ((txt == "0" && (evt.GetId() - 10000) < 10) || txt == "ERROR") {
+    int evtid = evt.GetId() - 10000;
+    if ((txt == "0" && evtid < 10 && evtid != 0) || txt == "0.000000" || txt == "0x0" || txt == "ERROR") {
         mNumDisplay->SetLabelText("");
-    }
-    if (bIsBorH == true) {
-        CalcWindow::SetTextBoxText(mStoredNum);
-        bIsBorH = false;
+        mNumStr = "";
     }
 
-    if (evt.GetId() - 10000 >= btnID::hex) {
-        if (evt.GetId() - 10000 == btnID::binary) {
-            int txtInt = wxAtoi(mNumDisplay->GetLabelText());
-            //mNumDisplay->SetLabelText(CalcWindow::Calculate(txt));
-            mStoredNum = mNumDisplay->GetLabelText();
-            CalcWindow::SetTextBoxText(std::bitset<8>(txtInt).to_string());
-            bIsBorH = true;
-        }
-        if (evt.GetId() - 10000 == btnID::hex) {
+    if (bIsBinary == true || bIsHex == true) {
+        mNumDisplay->SetLabelText(mNumStr);
+        bIsBinary = false;
+        bIsHex = false;
+    }
 
+    if (evtid >= 17) {
+        if (evtid == btnID::binary) {
+            bIsBinary = true;
+            std::string b = mProcessor->ProcessBinary(wxAtol(mNumStr));
+            mNumDisplay->SetLabelText(b);
+        }
+        else if (evtid == btnID::hex) {
+            bIsHex = true;
+            std::string h = mProcessor->ProcessHex(wxAtoi(mNumStr));
+            mNumDisplay->SetLabelText(h);
         }
 
-        if (evt.GetId() - 10000 == btnID::decimal) {
+        else if (evtid == btnID::decimal) {
             CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + ".");
+            mNumStr.append(".");
         }
 
-        if (evt.GetId() - 10000 == btnID::clear) {
+        else if (evtid == btnID::clear) {
             CalcWindow::SetTextBoxText("0");
             mPrevCalcDisplay->Clear();
             mNumStr.Clear();
@@ -133,65 +136,79 @@ void CalcWindow::OnButtonClick(wxCommandEvent& evt) {
     }
 
     //negative
-    if (evt.GetId() - 10000 == btnID::negative) {
-        CalcWindow::SetTextBoxText("-" + mNumDisplay->GetLabelText());
+    if (evtid == btnID::negative) {
+        if (txt != '0') {
+            for (int i = txt.length() - 1; i > 0; i--)
+            {
+                if (txt[i] == '+' || txt[i] == '-' || txt[i] == '*' || txt[i] == '/' || txt[i] == '%') {
+                    mNumDisplay->SetLabelText(txt.SubString(0, i) + "~" + txt.SubString(i + 1, txt.size()));
+                    mNumStr = "-" + mNumStr;
+                }
+            }
+            if (txt.Contains("+") == false && txt.Contains("-") == false && txt.Contains("*") == false &&
+                txt.Contains("/") == false && txt.Contains("%") == false) {
+                CalcWindow::SetTextBoxText("~" + mNumDisplay->GetLabelText());
+                mNumStr = "-" + mNumStr;
+            }
+        }
     }
 
     //0
-    if (evt.GetId() - 10000 == btnID::zero) {
-        if (mNumDisplay->GetLabelText() != "0") {
+    if (evtid == btnID::zero) {
+        if (txt != "0") {
             CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "0");
             mNumStr.append("0");
         }
     }
     //num other then 0
-    else if (evt.GetId() - 10000 <= btnID::nine) {
-        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + std::to_string(btnID(evt.GetId() - 10000)));
-        mNumStr.append(std::to_string(btnID(evt.GetId() - 10000)));
+    else if (evtid <= btnID::nine) {
+        CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + std::to_string(btnID(evtid)));
+        mNumStr.append(std::to_string(btnID(evtid)));
     }
-
     //operands
-    if (evt.GetId() - 10000 == btnID::add) {
+    if (evtid == btnID::add) {
         AddCommand* command = new AddCommand();
         command->mPrevNum = wxAtof(mNumStr);
         mNumStr.Clear();
         mProcessor->AddCommand(command, command->mPrevNum);
         CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "+");
     }
-    else if (evt.GetId() - 10000 == btnID::subtract) {
+    else if (evtid == btnID::subtract) {
         SubtractCommand* command = new SubtractCommand();
         command->mPrevNum = wxAtof(mNumStr);
         mNumStr.Clear();
         mProcessor->AddCommand(command, command->mPrevNum);
         CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "-");
     }
-    else if (evt.GetId() - 10000 == btnID::multiply) {
+    else if (evtid == btnID::multiply) {
         MultiplyCommand* command = new MultiplyCommand();
         command->mPrevNum = wxAtof(mNumStr);
         mNumStr.Clear();
         mProcessor->AddCommand(command, command->mPrevNum);
         CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "*");
     }
-    else if (evt.GetId() - 10000 == btnID::divide) {
+    else if (evtid == btnID::divide) {
         DivideCommand* command = new DivideCommand();
         command->mPrevNum = wxAtof(mNumStr);
         mNumStr.Clear();
         mProcessor->AddCommand(command, command->mPrevNum);
         CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "/");
     }
-    else if (evt.GetId() - 10000 == btnID::mod) {
+    else if (evtid == btnID::mod) {
         ModCommand* command = new ModCommand();
         command->mPrevNum = wxAtof(mNumStr);
         mNumStr.Clear();
         mProcessor->AddCommand(command, command->mPrevNum);
         CalcWindow::SetTextBoxText(mNumDisplay->GetLabelText() + "%");
     }
-    else if (evt.GetId() - 10000 == btnID::equals)
+    else if (evtid == btnID::equals)
     {
         mProcessor->AddCommand(new EqualsCommand(), wxAtof(mNumStr));
         mNumStr.Clear();
-        CalcWindow::SetTextBoxText(std::to_string(mProcessor->ExecuteCommands()));
-        if (wxAtoi(mNumDisplay->GetLabelText()) == wxAtof(mNumDisplay->GetLabelText())) {
+        mNumStr = std::to_string(mProcessor->ExecuteCommands());
+        CalcWindow::SetTextBoxText(mNumStr);
+
+        if ((wxAtof(mNumDisplay->GetLabelText()) - wxAtoi(mNumDisplay->GetLabelText())) == 0) {
             int tempSum = wxAtoi(mNumDisplay->GetLabelText());
             mNumDisplay->SetLabelText(std::to_string(tempSum));
         }
